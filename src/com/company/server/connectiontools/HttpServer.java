@@ -15,6 +15,8 @@ import java.net.InetSocketAddress;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+//Этот класс отвечает за общение сервера с клиентом
+
 public class HttpServer
 {
     private int port;

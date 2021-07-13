@@ -5,6 +5,16 @@
 
 <Pane prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.company.client.controllers.WorkPageController">
    <children>
-      <Label id="labelFIO" layoutX="39.0" layoutY="41.0" text="Имя Фамилия" />
+      <Label fx:id="labelFIO" layoutX="39.0" layoutY="41.0" text="Имя Фамилия" />
+      <Label layoutX="39.0" layoutY="85.0" text="Список карт: " />
+      <ListView fx:id="listViewClientsCards" layoutX="39.0" layoutY="113.0" prefHeight="200.0" prefWidth="300.0" />
+      <Button layoutX="39.0" layoutY="340.0" mnemonicParsing="false" onMouseClicked="#buttonLoadCardsClick" text="Перезагрузить список карт" />
+      <Button layoutX="39.0" layoutY="382.0" mnemonicParsing="false" onMouseClicked="#buttonCreateCardClick" text="Выпустить новую карту" />
+
+      <Label layoutX="379.0" layoutY="85.0" text="Введите номер карты:" />
+      <TextField fx:id="textFieldCardNumber" layoutX="381.0" layoutY="124.0" />
+      <Label layoutX="381.0" layoutY="196.0" text="Введите сумму денег:" />
+      <TextField fx:id="textFieldCardMoney" layoutX="381.0" layoutY="239.0" />
+      <Button layoutX="383.0" layoutY="288.0" mnemonicParsing="false" text="Пополнить сумму" onMouseClicked="#buttonAddMoneyClick"/>
    </children>
 </Pane>

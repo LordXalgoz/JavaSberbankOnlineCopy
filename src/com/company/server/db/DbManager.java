@@ -6,6 +6,8 @@ import com.company.server.db.tables.TableClients;
 
 public class DbManager
 {
+    //Единая точка входа в работу с таблицами
+
     private static DbManager instance = null;
 
     private String URL = "jdbc:postgresql://localhost:5432/postgres";

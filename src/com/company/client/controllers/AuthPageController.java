@@ -5,6 +5,8 @@ import com.company.client.api.ApiWorker;
 import com.company.common.communication.General;
 import com.company.common.communication.Response;
 import com.company.common.datatools.DataStorage;
+import com.company.common.dto.AuthClientDto;
+import com.company.common.dto.WorkClientDto;
 import com.company.common.entities.Client;
 import com.google.gson.Gson;
 import javafx.fxml.FXML;
@@ -12,8 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 
-public class AuthPageController
-{
+public class AuthPageController {
     @FXML
     TextField textFieldLogin;
 
@@ -31,41 +32,40 @@ public class AuthPageController
         new Alert(Alert.AlertType.CONFIRMATION, message).showAndWait();
     }
 
-    public void buttonAuthClick(MouseEvent mouseEvent)
-    {
+    public void buttonAuthClick(MouseEvent mouseEvent) {
+
         String login = textFieldLogin.getText();
         String password = textFieldPassword.getText();
 
-        if(login.length()==0 || password.length()==0)
-        {
-            ShowDialog("Ошибка. Пожалуйста введите логин и пароль");
+        if (login.length() == 0 || password.length() == 0) {
+            ShowDialog("Ошибка. Пожалуйста введите и логин и пароль");
             return;
         }
 
-        Client client = new Client(0, "", "", login, password);
+        AuthClientDto clientToServer = new AuthClientDto(login, password);
 
-        try
-        {
-            Response response = apiWorker.ClientsAuth(client);
+        try {
+            Response response = apiWorker.ClientsAuth(clientToServer);
 
-            switch (response.Status)
-            {
+            switch (response.Status) {
                 case Response.STATUS_OK:
-                    Client clientFromServer = new Gson().fromJson(response.Message, Client.class);
+                    WorkClientDto clientFromServer = new Gson().fromJson(response.Message, WorkClientDto.class);
 
-                    DataStorage.Add("current_client", clientFromServer);
+                    Client client = new Client(clientFromServer.Id, clientFromServer.FirstName, clientFromServer.LastName, "", "");
 
-                    ShowDialog("Успешная авторизация для "+clientFromServer.FirstName);
+                    DataStorage.Add("current_client", client);
+
+                    ShowDialog("Успешная авторизация для " + clientFromServer.FirstName);
+
                     Main.GoToPage(Main.WORK_PAGE);
                     break;
                 case Response.STATUS_ERROR:
-                    ShowDialog("Ошибка сервера: "+ response.Message);
+                    ShowDialog("Ошибка сервера: " + response.Message);
                     break;
             }
-        }
-        catch (Exception e)
-        {
-            ShowDialog("Ошибка отправки на сервер: "+ e.toString());
+
+        } catch (Exception e) {
+            ShowDialog("Ошибка отправки на сервер: " + e.toString());
         }
     }
 }

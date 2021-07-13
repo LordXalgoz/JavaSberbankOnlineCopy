@@ -32,7 +32,7 @@ public class TableClients
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("SELECT * FROM sberbank.clients WHERE login='%s' AND Password='%s'", clientLogin, clientPassword);
+            String query = String.format("SELECT * FROM sberbank.clients WHERE login='%s' AND password='%s'", clientLogin, clientPassword);
 
             ResultSet resultSet = statement.executeQuery(query);
 
@@ -40,7 +40,7 @@ public class TableClients
             Client client = null;
 
             if (findClientResult == false) {
-                DataStorage.Add("my_exception", "Ошибка. Клиент не найден");//1
+                //1
                 throw new Exception("Ошибка. Клиент не найден");
             } else {
                 client = new Client(

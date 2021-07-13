@@ -18,6 +18,7 @@ public class Router
             Method usersClassMethod = usersClass.getMethod(methodName, String.class);
             Response response = (Response) usersClassMethod.invoke(null, parameters);
 
+            ///вызов методов
             return response;
         }catch (Exception e)
         {

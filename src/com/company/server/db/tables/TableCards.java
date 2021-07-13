@@ -1,14 +1,15 @@
 package com.company.server.db.tables;
 
+import com.company.common.communication.Response;
 import com.company.common.datatools.DataStorage;
 import com.company.common.entities.Card;
 import com.company.common.entities.Client;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Properties;
+
+//Сокрывает в себя логику с работой с БД
 
 public class TableCards {
     private String url;
@@ -48,7 +49,7 @@ public class TableCards {
         }
     }
 
-    public void InsertNewCard(Card card) throws Exception
+    public void InsertNewCard(String cardNumber, int cardMoney) throws Exception
     {
         try {
             Class.forName("org.postgresql.Driver");
@@ -62,17 +63,99 @@ public class TableCards {
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("INSERT INTO sberbank.cards (number, money) VALUES ('%s', %s)", card.Number, card.Money);
+            String query = String.format("INSERT INTO sberbank.cards (number, money) VALUES ('%s', %d)",cardNumber, cardMoney);
 
             statement.executeUpdate(query);
         }
         catch (Exception e)
         {
-
+            throw e;
         }
     }
 
-    public int GetLastInsertedCardId() throws Exception
+    public void AddMoney(String cardNumber, int cardMoney) throws Exception
+    {
+        try {
+            Class.forName("org.postgresql.Driver");
+
+            Properties props = new Properties();
+            props.setProperty("user", login);
+            props.setProperty("password", password);
+            props.setProperty("ssl", "false");
+
+            Connection connection = DriverManager.getConnection(url, props);
+
+            Statement statement = connection.createStatement();
+
+            String query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'", cardMoney, cardNumber);
+
+            statement.executeUpdate(query);
+        }
+        catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    public int GetMoneyByNumber(String cardNumber) throws Exception
+    {
+        try
+        {
+            Class.forName("org.postgresql.Driver");
+
+            Properties props = new Properties();
+            props.setProperty("user", login);
+            props.setProperty("password", password);
+            props.setProperty("ssl", "false");
+
+            Connection connection = DriverManager.getConnection(url, props);
+
+            Statement statement = connection.createStatement();
+
+            String query = String.format("SELECT money FROM sberbank.cards WHERE number='%s'", cardNumber);
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            resultSet.next();
+            int money = resultSet.getInt(1);
+
+            connection.close();
+
+            return money;
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    public void SendMoney(String cardNumberFrom, String cardNumberTo, int cardMoney) throws Exception
+    {
+        try {
+            Class.forName("org.postgresql.Driver");
+
+            Properties props = new Properties();
+            props.setProperty("user", login);
+            props.setProperty("password", password);
+            props.setProperty("ssl", "false");
+
+            Connection connection = DriverManager.getConnection(url, props);
+
+            Statement statement = connection.createStatement();
+
+            String query = String.format("UPDATE sberbank.cards SET money = money - %d WHERE number='%s'",cardMoney, cardNumberFrom);
+
+            statement.executeUpdate(query);
+
+            query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'",cardMoney, cardNumberTo);
+
+            statement.executeUpdate(query);
+        }
+        catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    public int GetLastInsertedCardId() throws SQLException, ClassNotFoundException
     {
         try {
             Class.forName("org.postgresql.Driver");
@@ -91,12 +174,49 @@ public class TableCards {
             ResultSet resultSet = statement.executeQuery(query);
 
             resultSet.next();
-
             int idCard = resultSet.getInt(1);
 
             connection.close();
 
             return idCard;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public ArrayList<Card> GetCardsByIdClient(int idClient) throws Exception
+    {
+        try {
+            Class.forName("org.postgresql.Driver");
+
+            Properties props = new Properties();
+            props.setProperty("user", login);
+            props.setProperty("password", password);
+            props.setProperty("ssl", "false");
+
+            Connection connection = DriverManager.getConnection(url, props);
+
+            Statement statement = connection.createStatement();
+
+            String query = String.format("SELECT * FROM sberbank.cards WHERE id IN(SELECT idcard FROM sberbank.clientscards WHERE idclient=%d)", idClient);
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            ArrayList<Card> cards = new ArrayList<>();
+
+            while (resultSet.next() == true) {
+                Card card = new Card(
+                        resultSet.getInt("id"),
+                        resultSet.getString("number"),
+                        resultSet.getInt("money")
+                );
+
+                cards.add(card);
+            }
+
+            connection.close();
+
+            return cards;
         } catch (Exception e) {
             throw e;
         }
