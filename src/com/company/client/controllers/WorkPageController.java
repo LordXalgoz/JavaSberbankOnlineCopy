@@ -1,13 +1,11 @@
 package com.company.client.controllers;
 
-import com.company.client.Main;
 import com.company.client.api.ApiWorker;
 import com.company.common.communication.General;
 import com.company.common.communication.Response;
 import com.company.common.datatools.DataStorage;
-import com.company.common.dto.AddMoneyDto;
-import com.company.common.dto.AuthClientDto;
-import com.company.common.dto.WorkClientDto;
+import com.company.common.dto.AddMoneyToCardDto;
+import com.company.common.dto.SendMoneyFromCardToCardDto;
 import com.company.common.entities.Card;
 import com.company.common.entities.Client;
 import com.google.gson.Gson;
@@ -35,10 +33,19 @@ public class WorkPageController {
     ListView listViewClientsCards;
 
     @FXML
-    TextField textFieldCardNumber;
+    TextField textFieldCardAddNumber;
 
     @FXML
-    TextField textFieldCardMoney;
+    TextField textFieldCardAddMoney;
+
+    @FXML
+    TextField textFieldCardSendNumberFrom;
+
+    @FXML
+    TextField textFieldCardSendNumberTo;
+
+    @FXML
+    TextField textFieldCardSendMoney;
 
     ApiWorker apiWorker;
     Client client;
@@ -60,10 +67,15 @@ public class WorkPageController {
 
     ChangeListener<String> listViewClientsCardsSelectedItemListener = new ChangeListener<String>(){
         public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue){
-            int index = listViewClientsCards.getSelectionModel().getSelectedIndex();
-            Card selectedCard = client.Cards.get(index);
-
-            textFieldCardNumber.setText(selectedCard.Number);
+            try {
+                int index = listViewClientsCards.getSelectionModel().getSelectedIndex();
+                Card selectedCard = client.Cards.get(index);
+                textFieldCardAddNumber.setText(selectedCard.Number);
+            }
+            catch (Exception e)
+            {
+                return;
+            }
         }
     };
 
@@ -81,7 +93,7 @@ public class WorkPageController {
 
     private void LoadClientCards() {
         try {
-            Response response = apiWorker.CardsGetAllForClient(client.Id);
+            Response response = apiWorker.CardsGetAllCardsForClient(client.Id);
 
             switch (response.Status) {
                 case Response.STATUS_OK:
@@ -107,7 +119,7 @@ public class WorkPageController {
 
     public void buttonCreateCardClick(MouseEvent mouseEvent) {
         try {
-            Response response = apiWorker.CardsAddNewForClient(client.Id);
+            Response response = apiWorker.CardsAddNewCardForClient(client.Id);
 
             switch (response.Status) {
                 case Response.STATUS_OK:
@@ -124,8 +136,8 @@ public class WorkPageController {
 
     public void buttonAddMoneyClick(MouseEvent mouseEvent)
     {
-        String number = textFieldCardNumber.getText();
-        String money = textFieldCardMoney.getText();
+        String number = textFieldCardAddNumber.getText();
+        String money = textFieldCardAddMoney.getText();
 
         if(number.length()==0 || money.length()==0)
         {
@@ -142,7 +154,7 @@ public class WorkPageController {
         }
 
         int moneyAsInt = Integer.parseInt(money);
-        AddMoneyDto cardForAddMoney = new AddMoneyDto(number, moneyAsInt);
+        AddMoneyToCardDto cardForAddMoney = new AddMoneyToCardDto(number, moneyAsInt);
 
         try
         {
@@ -152,8 +164,56 @@ public class WorkPageController {
             {
                 case Response.STATUS_OK:
                     ShowDialog("Сумма денег успешна добавлена");
-                    textFieldCardNumber.clear();
-                    textFieldCardMoney.clear();
+                    textFieldCardAddNumber.clear();
+                    textFieldCardAddMoney.clear();
+                    LoadClientCards();
+                    break;
+                case Response.STATUS_ERROR:
+                    ShowDialog("Ошибка сервера: "+ response.Message);
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            ShowDialog("Ошибка отправки на сервер: "+ e.toString());
+        }
+    }
+
+    public void buttonSendMoneyClick(MouseEvent mouseEvent)
+    {
+        String numberFrom = textFieldCardSendNumberFrom.getText();
+        String numberTo = textFieldCardSendNumberTo.getText();
+        String money = textFieldCardSendMoney.getText();
+
+        if(numberFrom.length() == 0 || numberTo.length() == 0 || money.length() == 0)
+        {
+            ShowDialog("Ошибка. Пожалуйста введите номера карт и сумму денег для перевода");
+            return;
+        }
+
+        try {
+            Integer.parseInt(money);
+        }
+        catch (Exception e)
+        {
+            throw e;
+        }
+
+        int moneyAsInt = Integer.parseInt(money);
+        SendMoneyFromCardToCardDto sendMoneyFromCardToCardDto = new SendMoneyFromCardToCardDto(numberFrom, numberTo, moneyAsInt);
+
+        try
+        {
+            Response response = apiWorker.CardsSendMoneyFromCardToCard(sendMoneyFromCardToCardDto);
+
+            switch (response.Status)
+            {
+                case Response.STATUS_OK:
+                    ShowDialog("Сумма денег успешна переведена");
+                    textFieldCardSendNumberFrom.clear();
+                    textFieldCardSendNumberTo.clear();
+                    textFieldCardSendMoney.clear();
+
                     LoadClientCards();
                     break;
                 case Response.STATUS_ERROR:

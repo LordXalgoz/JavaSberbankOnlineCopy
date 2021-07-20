@@ -49,7 +49,7 @@ public class TableCards {
         }
     }
 
-    public void InsertNewCard(String cardNumber, int cardMoney) throws Exception
+    public void InsertNewCard(String number, int money) throws Exception
     {
         try {
             Class.forName("org.postgresql.Driver");
@@ -63,7 +63,7 @@ public class TableCards {
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("INSERT INTO sberbank.cards (number, money) VALUES ('%s', %d)",cardNumber, cardMoney);
+            String query = String.format("INSERT INTO sberbank.cards (number, money) VALUES ('%s', %d)",number, money);
 
             statement.executeUpdate(query);
         }
@@ -73,7 +73,7 @@ public class TableCards {
         }
     }
 
-    public void AddMoney(String cardNumber, int cardMoney) throws Exception
+    public void AddMoneyToCard(String number, int money) throws Exception
     {
         try {
             Class.forName("org.postgresql.Driver");
@@ -87,7 +87,7 @@ public class TableCards {
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'", cardMoney, cardNumber);
+            String query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'", money, number);
 
             statement.executeUpdate(query);
         }
@@ -97,7 +97,7 @@ public class TableCards {
         }
     }
 
-    public int GetMoneyByNumber(String cardNumber) throws Exception
+    public int GetCardMoneyByNumber(String number) throws Exception
     {
         try
         {
@@ -112,7 +112,7 @@ public class TableCards {
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("SELECT money FROM sberbank.cards WHERE number='%s'", cardNumber);
+            String query = String.format("SELECT money FROM sberbank.cards WHERE number='%s'", number);
 
             ResultSet resultSet = statement.executeQuery(query);
 
@@ -127,7 +127,7 @@ public class TableCards {
         }
     }
 
-    public void SendMoney(String cardNumberFrom, String cardNumberTo, int cardMoney) throws Exception
+    public void SendMoneyFromCardToCard(String numberFrom, String numberTo, int money) throws Exception
     {
         try {
             Class.forName("org.postgresql.Driver");
@@ -141,11 +141,11 @@ public class TableCards {
 
             Statement statement = connection.createStatement();
 
-            String query = String.format("UPDATE sberbank.cards SET money = money - %d WHERE number='%s'",cardMoney, cardNumberFrom);
+            String query = String.format("UPDATE sberbank.cards SET money = money - %d WHERE number='%s'",money, numberFrom);
 
             statement.executeUpdate(query);
 
-            query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'",cardMoney, cardNumberTo);
+            query = String.format("UPDATE sberbank.cards SET money = money + %d WHERE number='%s'",money, numberTo);
 
             statement.executeUpdate(query);
         }
